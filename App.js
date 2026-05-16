@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { THEMES, DEFAULT_THEME, ACCENT_PALETTE } from './src/theme';
 import { loadThemeKey, saveThemeKey, loadSettings, saveSettings } from './src/storage';
+import PinLockScreen, { isUnlocked } from './src/PinLockScreen';
 import HomeScreen       from './src/HomeScreen';
 import AddScreen        from './src/AddScreen';
 import FlashcardsScreen from './src/FlashcardsScreen';
@@ -108,13 +109,15 @@ function RootTabs({ theme }) {
 export default function App() {
   const [themeKey, setThemeKey]   = useState(DEFAULT_THEME);
   const [settings, setSettings]   = useState({ haptics: true, sound: false, animation: true, shake: false, dailyGoal: 20, reminder: true });
-  const [ready, setReady] = useState(false);
+  const [ready, setReady]         = useState(false);
+  const [unlocked, setUnlocked]   = useState(false);
 
   useEffect(() => {
     Promise.all([loadThemeKey(), loadSettings()]).then(([key, s]) => {
       setThemeKey(key || DEFAULT_THEME);
       setSettings(s);
       setReady(true);
+      setUnlocked(isUnlocked());
     });
   }, []);
 
@@ -134,6 +137,7 @@ export default function App() {
   }, []);
 
   if (!ready) return null;
+  if (!unlocked) return <PinLockScreen onUnlock={() => setUnlocked(true)} />;
 
   return (
     <ThemeContext.Provider value={{ theme, themeKey, applyTheme, settings, updateSetting }}>
