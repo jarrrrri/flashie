@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "FlashieExpo",
-    "slug": "FlashieExpo",
+    "name": "Flashie",
+    "slug": "flashie",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,7 +23,15 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single-page",
+      "name": "Flashie",
+      "shortName": "Flashie",
+      "description": "Your personal vocabulary inbox and flashcard app",
+      "themeColor": "#F4B6B6",
+      "backgroundColor": "#FAF7F2",
+      "preferRelatedApplications": false
     }
   }
 }
