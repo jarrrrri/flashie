@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 
-const CORRECT_PIN = '1234';
+const CORRECT_PIN = '8059';
 const STORAGE_KEY = 'flashie_unlocked';
 const UNLOCK_DAYS = 30; // stay unlocked for 30 days
 
