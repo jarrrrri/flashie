@@ -6,33 +6,6 @@ import { useAppTheme } from '../App';
 import { loadDecks, saveDecks } from './storage';
 import { ACCENT_PALETTE, radius } from './theme';
 
-const SAMPLE_DECKS = [
-  { id: 'jlpt-n5', name: 'JLPT N5', emoji: '日', color: '#F4B6B6', updated: '2 hours ago', cards: [
-    { id: 1, front: '猫', back: 'cat', example: '猫が好きです。' },
-    { id: 2, front: '犬', back: 'dog', example: '犬と散歩します。' },
-    { id: 3, front: '水', back: 'water', example: '水を飲みます。' },
-    { id: 4, front: '本', back: 'book', example: '本を読みます。' },
-    { id: 5, front: '学校', back: 'school', example: '学校に行きます。' },
-    { id: 6, front: '友達', back: 'friend', example: '友達と話します。' },
-    { id: 7, front: '美味しい', back: 'delicious', example: 'このケーキは美味しい。' },
-    { id: 8, front: 'ありがとう', back: 'thank you', example: 'ありがとうございます。' },
-  ]},
-  { id: 'english-vocab', name: 'English Vocabulary', emoji: 'A', color: '#A8D5BA', updated: 'Yesterday', cards: [
-    { id: 1, front: 'serendipity', back: 'A happy accident or pleasant surprise', example: 'Meeting her was pure serendipity.' },
-    { id: 2, front: 'ephemeral', back: 'Lasting for a very short time', example: 'The beauty of cherry blossoms is ephemeral.' },
-    { id: 3, front: 'petrichor', back: 'The earthy scent after rain', example: 'I love the petrichor after a summer storm.' },
-    { id: 4, front: 'ubiquitous', back: 'Present everywhere', example: 'Smartphones are ubiquitous today.' },
-    { id: 5, front: 'mellifluous', back: 'Sweet or musical; pleasant to hear', example: 'Her mellifluous voice calmed the baby.' },
-    { id: 6, front: 'quintessential', back: 'Representing the most perfect example', example: 'The quintessential summer day.' },
-  ]},
-  { id: 'business', name: 'Business English', emoji: 'B', color: '#F4D58D', updated: '3 days ago', cards: [
-    { id: 1, front: 'leverage', back: 'To use something to maximum advantage', example: 'We can leverage our network.' },
-    { id: 2, front: 'synergy', back: 'Combined effort producing greater result', example: "There's strong synergy between teams." },
-    { id: 3, front: 'stakeholder', back: 'A person with interest in a business', example: 'We need stakeholder buy-in first.' },
-    { id: 4, front: 'pipeline', back: 'A list of prospective deals or projects', example: 'Our Q3 pipeline looks healthy.' },
-    { id: 5, front: 'bandwidth', back: 'Capacity to handle work or tasks', example: "I don't have the bandwidth this week." },
-  ]},
-];
 
 export default function FlashcardsScreen({ navigation }) {
   const { theme } = useAppTheme();
@@ -43,7 +16,7 @@ export default function FlashcardsScreen({ navigation }) {
     loadDecks().then(setUserDecks);
   }, []));
 
-  const allDecks = [...userDecks, ...SAMPLE_DECKS];
+  const allDecks = userDecks;
   const isEmpty = allDecks.length === 0;
 
   const handleDelete = async (id) => {
@@ -76,7 +49,7 @@ export default function FlashcardsScreen({ navigation }) {
               menuOpen={menuOpen === deck.id}
               onMenuToggle={() => setMenuOpen(menuOpen === deck.id ? null : deck.id)}
               onPress={() => { setMenuOpen(null); navigation.navigate('Study', { deck }); }}
-              onDelete={SAMPLE_DECKS.find(d => d.id === deck.id) ? null : () => handleDelete(deck.id)}
+              onDelete={() => handleDelete(deck.id)}
             />
           ))}
           <TouchableOpacity style={[styles.newDeckBtn, { borderColor: `${theme.muted}4D` }]} activeOpacity={0.7}

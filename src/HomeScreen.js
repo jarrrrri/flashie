@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, LayoutAnimation } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, LayoutAnimation, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../App';
@@ -68,16 +68,46 @@ export default function HomeScreen({ navigation }) {
 }
 
 function EmptyState({ theme, onAdd }) {
+  const bobAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bobAnim, { toValue: -8, duration: 1100, useNativeDriver: true }),
+        Animated.timing(bobAnim, { toValue: 0,  duration: 1100, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
   return (
     <ScrollView contentContainerStyle={styles.emptyWrap} showsVerticalScrollIndicator={false}>
-      {/* Ghost card stack */}
+      {/* Ghost card stack + floating add circle */}
       <View style={styles.ghostStack}>
+        {/* Back cards */}
         <View style={[styles.ghostCard, styles.ghostCard3, { backgroundColor: theme.surfaceAlt, borderColor: theme.faint }]} />
         <View style={[styles.ghostCard, styles.ghostCard2, { backgroundColor: theme.surfaceAlt, borderColor: theme.faint }]} />
+        {/* Front card */}
         <View style={[styles.ghostCard, styles.ghostCard1, { backgroundColor: theme.surface, borderColor: theme.faint }]}>
-          <View style={[styles.ghostLine, { width: '60%', backgroundColor: theme.faint }]} />
-          <View style={[styles.ghostLine, { width: '40%', backgroundColor: theme.faint, height: 6, marginTop: 8 }]} />
+          {/* Top row: Aa box + CARD 01 label */}
+          <View style={styles.ghostCardTop}>
+            <View style={[styles.ghostAaBox, { backgroundColor: `${theme.accent}30` }]}>
+              <Text style={[styles.ghostAaText, { color: theme.accent }]}>Aa</Text>
+            </View>
+            <Text style={[styles.ghostCardLabel, { color: theme.muted }]}>CARD 01</Text>
+          </View>
+          {/* Skeleton lines */}
+          <View style={styles.ghostLines}>
+            <View style={[styles.ghostLine, { width: '80%', backgroundColor: theme.faint }]} />
+            <View style={[styles.ghostLine, { width: '60%', backgroundColor: theme.faint, marginTop: 7 }]} />
+            <View style={[styles.ghostLine, { width: '40%', backgroundColor: theme.faint, height: 6, marginTop: 7 }]} />
+          </View>
         </View>
+        {/* Floating dashed "+" circle — outside top-right of stack */}
+        <Animated.View style={[styles.floatingAddCircle, { borderColor: theme.muted, transform: [{ translateY: bobAnim }] }]}>
+          <TouchableOpacity onPress={onAdd} activeOpacity={0.7} style={styles.floatingAddInner}>
+            <Text style={[styles.floatingAddText, { color: theme.muted }]}>+</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
 
       <Text style={[styles.emptyTitle, { color: theme.ink }]}>Your inbox is empty.</Text>
@@ -190,13 +220,21 @@ const styles = StyleSheet.create({
   appName:       { fontSize: 22, fontWeight: '900', letterSpacing: -0.4, lineHeight: 24 },
   appSub:        { fontSize: 11, fontWeight: '600', letterSpacing: 0.6, marginTop: 2 },
   // Empty state
-  emptyWrap:     { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 130 },
-  ghostStack:    { position: 'relative', width: 220, height: 150, marginBottom: 8 },
-  ghostCard:     { position: 'absolute', inset: 0, borderRadius: 22, borderWidth: 0.5 },
-  ghostCard3:    { transform: [{ translateY: 12 }, { rotate: '-6deg' }, { scaleX: 0.88 }] },
-  ghostCard2:    { transform: [{ translateY: 6 }, { rotate: '3deg' }, { scaleX: 0.94 }] },
-  ghostCard1:    { justifyContent: 'flex-end', padding: 18, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
-  ghostLine:     { height: 8, borderRadius: 4 },
+  emptyWrap:         { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24, paddingBottom: 130 },
+  ghostStack:        { position: 'relative', width: 230, height: 175, marginBottom: 12 },
+  ghostCard:         { position: 'absolute', inset: 0, borderRadius: 22, borderWidth: 0.5 },
+  ghostCard3:        { transform: [{ translateY: 14 }, { rotate: '-6deg' }, { scaleX: 0.88 }] },
+  ghostCard2:        { transform: [{ translateY: 7 }, { rotate: '3deg' }, { scaleX: 0.94 }] },
+  ghostCard1:        { padding: 18, justifyContent: 'space-between', shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 } },
+  ghostCardTop:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  ghostAaBox:        { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  ghostAaText:       { fontSize: 14, fontWeight: '900' },
+  ghostCardLabel:    { fontSize: 10, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' },
+  ghostLines:        { gap: 0 },
+  ghostLine:         { height: 8, borderRadius: 4 },
+  floatingAddCircle: { position: 'absolute', top: -22, right: -22, width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
+  floatingAddInner:  { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  floatingAddText:   { fontSize: 26, lineHeight: 30, fontWeight: '300' },
   emptyTitle:    { fontSize: 26, fontWeight: '800', letterSpacing: -0.5, textAlign: 'center', marginTop: 30, lineHeight: 32 },
   emptyBody:     { fontSize: 15, textAlign: 'center', marginTop: 10, lineHeight: 22, maxWidth: 290, fontWeight: '500' },
   saveFirstBtn:  { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 22, borderRadius: 24, marginTop: 24 },

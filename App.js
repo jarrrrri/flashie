@@ -16,8 +16,6 @@ import AddScreen        from './src/AddScreen';
 import FlashcardsScreen from './src/FlashcardsScreen';
 import StudyScreen      from './src/StudyScreen';
 import CreateDeckScreen from './src/CreateDeckScreen';
-import MenuScreen       from './src/MenuScreen';
-import ThemesScreen     from './src/ThemesScreen';
 
 // Theme context
 export const ThemeContext = React.createContext(null);
@@ -45,21 +43,12 @@ function FlashcardsStack({ theme }) {
   );
 }
 
-function MenuStack() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MenuMain"  component={MenuScreen} />
-      <Stack.Screen name="Themes"    component={ThemesScreen} options={{ presentation: 'modal' }} />
-    </Stack.Navigator>
-  );
-}
 
 function CustomTabBar({ state, navigation, theme }) {
   const tabs = [
     { name: 'Home',       label: 'Home',       isAdd: false, icon: 'home-outline',    iconActive: 'home' },
     { name: 'ADD_ACTION', label: 'Add',         isAdd: true  },
     { name: 'Flashcards', label: 'Flashcards',  isAdd: false, icon: 'albums-outline', iconActive: 'albums' },
-    { name: 'Menu',       label: 'Menu',        isAdd: false, icon: 'settings-outline', iconActive: 'settings' },
   ];
 
   return (
@@ -101,7 +90,6 @@ function RootTabs({ theme }) {
       screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Home"       children={() => <HomeStack theme={theme} />} />
       <Tab.Screen name="Flashcards" children={() => <FlashcardsStack theme={theme} />} />
-      <Tab.Screen name="Menu"       component={MenuStack} />
     </Tab.Navigator>
   );
 }
