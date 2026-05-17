@@ -46,6 +46,13 @@ export default function StudyScreen({ navigation, route }) {
     });
   };
 
+  // Always keep refs pointing to the latest functions so the PanResponder
+  // (created once on mount) never uses stale closures.
+  const navigateRef = useRef(navigate);
+  const flipRef     = useRef(flip);
+  navigateRef.current = navigate;
+  flipRef.current     = flip;
+
   const panResponder = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10,
@@ -55,13 +62,13 @@ export default function StudyScreen({ navigation, route }) {
     },
     onPanResponderRelease: (_, g) => {
       if (Math.abs(g.dx) > 80) {
-        navigate(g.dx < 0 ? 1 : -1);
+        navigateRef.current(g.dx < 0 ? 1 : -1);
       } else if (Math.abs(g.dx) < 6 && Math.abs(g.dy) < 6) {
         Animated.parallel([
           Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true }),
           Animated.spring(rotAnim,   { toValue: 0, useNativeDriver: true }),
         ]).start();
-        flip();
+        flipRef.current();
       } else {
         Animated.parallel([
           Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true }),
