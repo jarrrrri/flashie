@@ -26,6 +26,7 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
       "output": "single-page",
+      "baseUrl": "/flashie",
       "name": "Flashie",
       "shortName": "Flashie",
       "description": "Your personal vocabulary inbox and flashcard app",
