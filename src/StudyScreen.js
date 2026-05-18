@@ -13,15 +13,15 @@ export default function StudyScreen({ navigation, route }) {
   const { deck } = route.params;
   const cards = deck.cards;
 
-  const [index,   setIndex]   = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const [index,     setIndex]     = useState(0);
+  const [flipped,   setFlipped]   = useState(false);
+  const [completed, setCompleted] = useState(false);
   const flipAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const rotAnim   = useRef(new Animated.Value(0)).current;
 
   const card = cards[index];
   const progress = (index + 1) / cards.length;
-  const isLast = index === cards.length - 1;
   const isJapanese = deck.id === 'jlpt-n5' || /[぀-ヿ㐀-鿿]/.test(card.front);
 
   const flip = () => {
@@ -32,7 +32,8 @@ export default function StudyScreen({ navigation, route }) {
 
   const navigate = (dir) => {
     const newIndex = index + dir;
-    if (newIndex < 0 || newIndex >= cards.length) return;
+    if (newIndex < 0) return;
+    if (newIndex >= cards.length) { setCompleted(true); return; }
     Animated.parallel([
       Animated.timing(slideAnim, { toValue: dir * -SCREEN_W, duration: 220, useNativeDriver: true }),
       Animated.timing(rotAnim,   { toValue: dir * -10,       duration: 220, useNativeDriver: true }),
@@ -77,6 +78,19 @@ export default function StudyScreen({ navigation, route }) {
       }
     },
   })).current;
+
+  const restart = () => {
+    setIndex(0);
+    setFlipped(false);
+    setCompleted(false);
+    flipAnim.setValue(0);
+    slideAnim.setValue(0);
+    rotAnim.setValue(0);
+  };
+
+  if (completed) {
+    return <CompletionScreen theme={theme} deck={deck} onRestart={restart} onBack={() => navigation.goBack()} />;
+  }
 
   const frontRotate  = flipAnim.interpolate({ inputRange: [0, 180], outputRange: ['0deg', '180deg'] });
   const backRotate   = flipAnim.interpolate({ inputRange: [0, 180], outputRange: ['180deg', '360deg'] });
@@ -159,20 +173,79 @@ export default function StudyScreen({ navigation, route }) {
           <Text style={[styles.flipBtnText, { color: theme.accentInk }]}>{flipped ? 'Show vocabulary' : 'Reveal meaning'}</Text>
         </TouchableOpacity>
 
-        {isLast ? (
-          <TouchableOpacity style={styles.finishBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="checkmark" size={18} color="#fff" />
-            <Text style={styles.finishText}>Finish</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={[styles.navBtn, { backgroundColor: theme.surface, borderColor: theme.faint }]} onPress={() => navigate(1)}>
-            <Ionicons name="chevron-forward" size={22} color={theme.ink} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: theme.surface, borderColor: theme.faint }]}
+          onPress={() => navigate(1)}>
+          <Ionicons name="chevron-forward" size={22} color={theme.ink} />
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+const CELEBRATION_MESSAGES = [
+  { headline: 'You made it!',     sub: 'Every card reviewed. That\'s a win.' },
+  { headline: 'Great job!',       sub: 'You finished the whole deck. Keep it up!' },
+  { headline: 'Nice work!',       sub: 'Your vocabulary is growing every day.' },
+  { headline: 'Deck complete!',   sub: 'Come back tomorrow to reinforce what you learned.' },
+  { headline: 'You crushed it!',  sub: 'One deck down. What\'s next?' },
+];
+
+function CompletionScreen({ theme, deck, onRestart, onBack }) {
+  const msg = CELEBRATION_MESSAGES[deck.cards.length % CELEBRATION_MESSAGES.length];
+  return (
+    <View style={[cs.container, { backgroundColor: theme.bg }]}>
+      {/* Celebration card illustration */}
+      <View style={cs.illustration}>
+        <View style={[cs.confCard2, { backgroundColor: theme.surfaceAlt, borderColor: theme.faint }]} />
+        <View style={[cs.confCard1, { backgroundColor: theme.surface, borderColor: theme.faint }]}>
+          <Text style={cs.emoji}>🎉</Text>
+        </View>
+      </View>
+
+      <Text style={[cs.headline, { color: theme.ink }]}>{msg.headline}</Text>
+      <Text style={[cs.sub, { color: theme.muted }]}>{msg.sub}</Text>
+
+      <View style={cs.statsRow}>
+        <View style={[cs.statBox, { backgroundColor: theme.surface, borderColor: theme.faint }]}>
+          <Text style={[cs.statNum, { color: theme.ink }]}>{deck.cards.length}</Text>
+          <Text style={[cs.statLabel, { color: theme.muted }]}>CARDS</Text>
+        </View>
+        <View style={[cs.statBox, { backgroundColor: theme.surface, borderColor: theme.faint }]}>
+          <Text style={[cs.statNum, { color: theme.accent }]}>100%</Text>
+          <Text style={[cs.statLabel, { color: theme.muted }]}>COMPLETE</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity style={[cs.restartBtn, { backgroundColor: theme.accent }]} onPress={onRestart} activeOpacity={0.8}>
+        <Ionicons name="refresh" size={18} color={theme.accentInk} />
+        <Text style={[cs.restartText, { color: theme.accentInk }]}>Restart deck</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[cs.backBtn, { borderColor: theme.faint }]} onPress={onBack} activeOpacity={0.7}>
+        <Text style={[cs.backText, { color: theme.muted }]}>Back to flashcards</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const cs = StyleSheet.create({
+  container:  { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, paddingBottom: 60 },
+  illustration:{ position: 'relative', width: 180, height: 140, marginBottom: 32 },
+  confCard2:  { position: 'absolute', inset: 0, borderRadius: 24, borderWidth: 0.5, transform: [{ rotate: '-8deg' }, { scaleX: 0.9 }] },
+  confCard1:  { position: 'absolute', inset: 0, borderRadius: 24, borderWidth: 0.5, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 6 } },
+  emoji:      { fontSize: 52 },
+  headline:   { fontSize: 32, fontWeight: '900', letterSpacing: -0.6, textAlign: 'center' },
+  sub:        { fontSize: 15, fontWeight: '500', textAlign: 'center', lineHeight: 22, marginTop: 8, maxWidth: 280 },
+  statsRow:   { flexDirection: 'row', gap: 12, marginTop: 28 },
+  statBox:    { flex: 1, borderRadius: 18, borderWidth: 0.5, paddingVertical: 16, alignItems: 'center', gap: 4 },
+  statNum:    { fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
+  statLabel:  { fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
+  restartBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 52, paddingHorizontal: 28, borderRadius: 26, marginTop: 28 },
+  restartText:{ fontSize: 16, fontWeight: '700' },
+  backBtn:    { marginTop: 12, height: 48, paddingHorizontal: 28, borderRadius: 24, borderWidth: 0.5, alignItems: 'center', justifyContent: 'center' },
+  backText:   { fontSize: 15, fontWeight: '600' },
+});
 
 const styles = StyleSheet.create({
   container:    { flex: 1 },
@@ -201,6 +274,5 @@ const styles = StyleSheet.create({
   navBtn:       { width: 56, height: 56, borderRadius: 28, borderWidth: 0.5, alignItems: 'center', justifyContent: 'center' },
   flipBtn:      { flex: 1, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
   flipBtnText:  { fontSize: 16, fontWeight: '700' },
-  finishBtn:    { flexDirection: 'row', alignItems: 'center', gap: 6, height: 56, paddingHorizontal: 18, borderRadius: 28, backgroundColor: '#1F8A5B' },
-  finishText:   { fontSize: 15, fontWeight: '900', color: '#fff' },
+
 });
